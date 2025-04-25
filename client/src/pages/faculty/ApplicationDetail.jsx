@@ -32,18 +32,25 @@ export default function ApplicationDetail() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['/api/faculty/applications', id],
     queryFn: async () => {
+      console.log('Fetching application with ID:', id);
       const response = await apiRequest('GET', `/api/faculty/applications/${id}`);
-      return response.json();
+      const data = await response.json();
+      console.log('Application data:', data);
+      return data;
     }
   });
 
   // Approve application mutation
   const approveMutation = useMutation({
     mutationFn: async () => {
+      console.log('Approving application with ID:', id);
       const response = await apiRequest('POST', `/api/faculty/applications/${id}/approve`);
-      return response.json();
+      const result = await response.json();
+      console.log('Approval result:', result);
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Application approved successfully:', data);
       toast({
         title: "Application approved",
         description: "The application has been approved successfully",
@@ -54,6 +61,7 @@ export default function ApplicationDetail() {
       setShowApproveDialog(false);
     },
     onError: (error) => {
+      console.error('Error approving application:', error);
       toast({
         title: "Error",
         description: "Failed to approve application. Please try again.",
@@ -66,10 +74,14 @@ export default function ApplicationDetail() {
   // Reject application mutation
   const rejectMutation = useMutation({
     mutationFn: async () => {
+      console.log('Rejecting application with ID:', id);
       const response = await apiRequest('POST', `/api/faculty/applications/${id}/reject`);
-      return response.json();
+      const result = await response.json();
+      console.log('Rejection result:', result);
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Application rejected successfully:', data);
       toast({
         title: "Application rejected",
         description: "The application has been rejected successfully",
@@ -80,6 +92,7 @@ export default function ApplicationDetail() {
       setShowRejectDialog(false);
     },
     onError: (error) => {
+      console.error('Error rejecting application:', error);
       toast({
         title: "Error",
         description: "Failed to reject application. Please try again.",
