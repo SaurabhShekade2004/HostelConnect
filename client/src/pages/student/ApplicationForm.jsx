@@ -39,6 +39,19 @@ export default function ApplicationForm() {
   // Handle form submission
   const submitMutation = useMutation({
     mutationFn: (data) => {
+      // Display user info to debug role issues
+      console.log('Current user before submission:', user);
+      
+      if (!user || user.role !== 'student') {
+        console.error('User role is not student or user is not logged in!');
+        toast({
+          title: 'Authentication Error',
+          description: 'Please make sure you are logged in as a student.',
+          variant: 'destructive'
+        });
+        throw new Error('Authentication error: User must be a student to submit application');
+      }
+      
       // Create FormData object for file upload
       const formDataObj = new FormData();
       
@@ -56,6 +69,8 @@ export default function ApplicationForm() {
       
       // Append agreement as string
       formDataObj.append('agreeToRules', data.agreeToRules.toString());
+      
+      console.log('Sending application with token for role:', user.role);
       
       // Send request - apiRequest expects (method, url, data) as separate parameters
       return apiRequest('POST', '/api/student/application', formDataObj);

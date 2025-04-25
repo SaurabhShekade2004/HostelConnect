@@ -44,16 +44,22 @@ export function AuthProvider({ children }) {
   // Login function
   const login = async (email, password, role) => {
     try {
+      console.log('Login attempt with role:', role);
       // For development: Use mock login for testing
+      const tokenId = Math.random().toString(36).substring(7);
+      console.log('Generated token ID:', tokenId);
+      
       const mockUser = {
         id: role === 'student' ? 1 : 2,
         name: role === 'student' ? 'Student User' : 'Faculty Admin',
         email: email,
         role: role,
-        // Generate a mock JWT token for authorization
-        token: `mock-jwt-token-${role}-${Math.random().toString(36).substring(7)}`,
+        // Generate a consistent mock JWT token for authorization
+        token: `mock-jwt-token-${role}-${tokenId}`,
         createdAt: new Date().toISOString()
       };
+      
+      console.log('Creating mock user with token:', mockUser.token);
       
       // Set user in state
       setUser(mockUser);

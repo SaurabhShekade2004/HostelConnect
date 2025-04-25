@@ -53,11 +53,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const authenticate = (req: any, res: any, next: any) => {
     const token = req.headers.authorization?.split(' ')[1] || req.cookies?.token;
     
+    console.log(`Request URL: ${req.method} ${req.path}`);
+    console.log(`Authorization header: ${req.headers.authorization || 'not provided'}`);
+    
     // For development: Check if token is a mock token (frontend testing)
     if (token && token.startsWith('mock-jwt-token-')) {
       // Extract role from the mock token
-      const role = token.split('-')[3];
-      console.log(`Authenticating with mock token for role: ${role}`);
+      const parts = token.split('-');
+      const role = parts[3];
+      const tokenId = parts[4]; // Get the random token ID
+      console.log(`Authenticating with mock token for role: ${role}, token ID: ${tokenId}`);
+      
       // Create a mock user object
       req.user = {
         id: role === 'student' ? 1 : 2,
