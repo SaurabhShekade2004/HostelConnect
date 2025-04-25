@@ -10,6 +10,7 @@ import { apiRequest } from '@/lib/queryClient';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { FileText, Users, Search, Eye, Check, X } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function AllotRoom() {
   const { toast } = useToast();
@@ -24,6 +25,8 @@ export default function AllotRoom() {
     bedNumber: ''
   });
   const [currentRoomOccupancy, setCurrentRoomOccupancy] = useState(0);
+  const [occupiedBeds, setOccupiedBeds] = useState([]);
+  const { user, logout } = useAuth();
 
   // Fetch applications - only get pending applications
   const { data: applications, isLoading: isLoadingApplications } = useQuery({
@@ -51,9 +54,12 @@ export default function AllotRoom() {
       const response = await apiRequest('GET', `/api/faculty/rooms/${building}/${roomNumber}/occupancy`);
       const data = await response.json();
       setCurrentRoomOccupancy(data.occupancy);
+      setOccupiedBeds(data.occupiedBeds || []);
       return data.occupancy;
     } catch (error) {
       console.error("Error checking room occupancy:", error);
+      setCurrentRoomOccupancy(0);
+      setOccupiedBeds([]);
       return 0;
     }
   };
@@ -103,7 +109,7 @@ export default function AllotRoom() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
       <div className="w-64">
-        <SidebarNav currentUser={currentUser} onLogout={onLogout} />
+        <SidebarNav currentUser={user} onLogout={logout} />
       </div>
       
       <div className="flex-1 p-8">
@@ -420,8 +426,8 @@ export default function AllotRoom() {
                   disabled={currentRoomOccupancy >= 2 || !roomAllotmentData.roomNumber || !roomAllotmentData.hostelBuilding}
                 >
                   <option value="">Select Bed Number</option>
-                  <option value="1" disabled={currentRoomOccupancy > 0 && currentRoomOccupancy.includes(1)}>Bed 1</option>
-                  <option value="2" disabled={currentRoomOccupancy > 0 && currentRoomOccupancy.includes(2)}>Bed 2</option>
+                  <option value="1" disabled={occupiedBeds.includes("1")}>Bed 1</option>
+                  <option value="2" disabled={occupiedBeds.includes("2")}>Bed 2</option>
                 </select>
               </div>
             </div>
