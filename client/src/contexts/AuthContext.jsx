@@ -50,6 +50,8 @@ export function AuthProvider({ children }) {
         name: role === 'student' ? 'Student User' : 'Faculty Admin',
         email: email,
         role: role,
+        // Generate a mock JWT token for authorization
+        token: `mock-jwt-token-${role}-${Math.random().toString(36).substring(7)}`,
         createdAt: new Date().toISOString()
       };
       

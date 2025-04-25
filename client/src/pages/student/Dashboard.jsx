@@ -18,7 +18,15 @@ export default function StudentDashboard() {
   // Fetch dashboard data
   const { data, isLoading, error } = useQuery({
     queryKey: ['/api/student/dashboard'],
-    queryFn: () => apiRequest({ url: '/api/student/dashboard', method: 'GET' })
+    queryFn: async ({ queryKey }) => {
+      try {
+        const response = await apiRequest('GET', queryKey[0]);
+        return await response.json();
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+        throw err;
+      }
+    }
   });
 
   // Handle application status badge
