@@ -28,7 +28,7 @@ export default function Home() {
         <div 
           className="relative h-[600px] bg-cover bg-center" 
           style={{ 
-            backgroundImage: "url('/images/geca-hostel.jpg')" 
+            backgroundImage: "url('/attached_assets/geca-hostel.jpg')" 
           }} 
         />
         <div className="absolute inset-0 flex flex-col items-center justify-center z-20 text-white p-4">

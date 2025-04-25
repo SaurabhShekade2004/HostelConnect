@@ -37,7 +37,7 @@ export default function Navbar() {
           {/* Logo and Hostel Name */}
           <Link href="/" className="flex items-center">
             <img 
-              src="/images/Geca_logo.png" 
+              src="/attached_assets/Geca_logo.png" 
               alt="College Logo" 
               className="h-14 w-14 mr-2" 
             />

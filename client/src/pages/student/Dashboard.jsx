@@ -129,7 +129,7 @@ export default function StudentDashboard() {
                           </div>
                           <div className="flex items-center justify-between">
                             <span className="text-sm text-gray-500 dark:text-gray-400">Application ID:</span>
-                            <span className="text-sm font-medium">{data.application.applicationId}</span>
+                            <span className="text-sm font-medium">{data.application._id}</span>
                           </div>
                         </>
                       ) : (
@@ -321,7 +321,7 @@ export default function StudentDashboard() {
                         <dl className="space-y-2">
                           <div className="flex justify-between">
                             <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Application ID:</dt>
-                            <dd className="text-sm">{data.application.applicationId}</dd>
+                            <dd className="text-sm">{data.application._id}</dd>
                           </div>
                           <div className="flex justify-between">
                             <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Status:</dt>

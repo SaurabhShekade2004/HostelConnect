@@ -738,6 +738,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Serve uploaded files
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+  
+  // Serve attached assets
+  app.use('/attached_assets', express.static(path.join(process.cwd(), 'attached_assets')));
 
   const httpServer = createServer(app);
   
