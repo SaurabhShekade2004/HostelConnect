@@ -1,256 +1,242 @@
 import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
-import { X } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useToast } from '@/hooks/use-toast';
 
-export default function RegisterModal({ isOpen, onClose, onShowLogin, initialTab = 'student' }) {
-  const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState(initialTab);
+export default function RegisterModal() {
+  // Initialize state
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    rollNo: '',
     password: '',
-    confirmPassword: '',
-    agreeTerms: false
+    passwordConfirm: '',
+    role: 'student',
+    rollNo: ''
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
+  // Get auth context and toast
+  const { showRegisterModal, setShowRegisterModal, setShowLoginModal, register } = useAuth();
+  const { toast } = useToast();
+
+  // Handle form input changes
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+  // Handle role change
+  const handleRoleChange = (value) => {
+    setFormData(prev => ({ ...prev, role: value }));
   };
 
+  // Handle register form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validate passwords match
-    if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Passwords do not match",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Validate terms acceptance
-    if (!formData.agreeTerms) {
-      toast({
-        title: "Error",
-        description: "You must agree to the Terms of Service and Privacy Policy",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setIsSubmitting(true);
-    
+    setError('');
+    setIsLoading(true);
+
     try {
-      const userData = {
+      // Validate inputs
+      if (!formData.name || !formData.email || !formData.password || !formData.passwordConfirm) {
+        setError('Please fill all required fields');
+        setIsLoading(false);
+        return;
+      }
+
+      if (formData.password !== formData.passwordConfirm) {
+        setError('Passwords do not match');
+        setIsLoading(false);
+        return;
+      }
+
+      if (formData.role === 'student' && !formData.rollNo) {
+        setError('Roll number is required for students');
+        setIsLoading(false);
+        return;
+      }
+
+      // Call register function from auth context
+      const result = await register({
         name: formData.name,
         email: formData.email,
         password: formData.password,
-        role: activeTab
-      };
-      
-      // Add roll number for students only
-      if (activeTab === 'student') {
-        userData.rollNo = formData.rollNo;
-      }
-      
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
+        role: formData.role,
+        rollNo: formData.role === 'student' ? formData.rollNo : undefined
       });
       
-      if (response.ok) {
+      if (result.success) {
         toast({
-          title: "Registration successful!",
-          description: "You can now login with your credentials.",
-          variant: "success",
+          title: 'Registration successful!',
+          description: 'Your account has been created. You can now log in.',
+          variant: 'success'
         });
-        onClose();
-        onShowLogin(activeTab);
+        closeModal();
+        setShowLoginModal(true);
       } else {
-        const errorData = await response.json();
-        toast({
-          title: "Registration failed",
-          description: errorData.message || "Could not create account",
-          variant: "destructive",
-        });
+        setError(result.message);
       }
-    } catch (error) {
-      toast({
-        title: "Registration failed",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      });
+    } catch (err) {
+      setError('An error occurred during registration. Please try again.');
+      console.error(err);
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
-  if (!isOpen) return null;
+  // Switch to login modal
+  const switchToLogin = () => {
+    closeModal();
+    setShowLoginModal(true);
+  };
+
+  // Close modal and reset form
+  const closeModal = () => {
+    setShowRegisterModal(false);
+    setFormData({
+      name: '',
+      email: '',
+      password: '',
+      passwordConfirm: '',
+      role: 'student',
+      rollNo: ''
+    });
+    setError('');
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-accent font-bold text-primary-800 dark:text-primary-300">Register</h2>
-            <Button 
-              onClick={onClose} 
-              variant="ghost" 
-              size="icon"
-              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+    <Dialog open={showRegisterModal} onOpenChange={setShowRegisterModal}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle className="text-2xl">Create an Account</DialogTitle>
+          <DialogDescription>
+            Register to apply for hostel accommodation.
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* Error message */}
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+            <span className="block sm:inline">{error}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Full Name input */}
+          <div className="space-y-2">
+            <Label htmlFor="name">Full Name</Label>
+            <Input 
+              id="name"
+              name="name"
+              type="text" 
+              placeholder="Full Name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          {/* Email input */}
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input 
+              id="email"
+              name="email"
+              type="email" 
+              placeholder="your.email@example.com"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          {/* Password input */}
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input 
+              id="password"
+              name="password"
+              type="password" 
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          {/* Confirm Password input */}
+          <div className="space-y-2">
+            <Label htmlFor="passwordConfirm">Confirm Password</Label>
+            <Input 
+              id="passwordConfirm"
+              name="passwordConfirm"
+              type="password" 
+              placeholder="••••••••"
+              value={formData.passwordConfirm}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          {/* Role selection */}
+          <div className="space-y-2">
+            <Label>I am a:</Label>
+            <RadioGroup 
+              value={formData.role} 
+              onValueChange={handleRoleChange} 
+              className="flex gap-4"
             >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-          
-          {/* Register Tabs */}
-          <div className="mb-6">
-            <div className="flex border-b border-gray-200 dark:border-gray-700">
-              <button 
-                onClick={() => handleTabChange('student')}
-                className={activeTab === 'student' ? "login-tab-active py-2 px-4 font-medium focus:outline-none" : "login-tab-inactive py-2 px-4 font-medium focus:outline-none"}
-              >
-                Student Register
-              </button>
-              <button 
-                onClick={() => handleTabChange('faculty')}
-                className={activeTab === 'faculty' ? "login-tab-active py-2 px-4 font-medium focus:outline-none" : "login-tab-inactive py-2 px-4 font-medium focus:outline-none"}
-              >
-                Faculty Register
-              </button>
-            </div>
-          </div>
-          
-          {/* Registration Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
-              <Input 
-                type="text" 
-                id="name" 
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2"
-                placeholder="Enter your full name"
-                required
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
-              <Input 
-                type="email" 
-                id="email" 
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2"
-                placeholder="Enter your email"
-                required
-              />
-            </div>
-            
-            {activeTab === 'student' && (
-              <div>
-                <label htmlFor="rollNo" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Roll Number</label>
-                <Input 
-                  type="text" 
-                  id="rollNo" 
-                  name="rollNo"
-                  value={formData.rollNo}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2"
-                  placeholder="Enter your roll number"
-                  required
-                />
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="student" id="register-student" />
+                <Label htmlFor="register-student">Student</Label>
               </div>
-            )}
-            
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="faculty" id="register-faculty" />
+                <Label htmlFor="register-faculty">Faculty</Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          {/* Roll Number input (only for students) */}
+          {formData.role === 'student' && (
+            <div className="space-y-2">
+              <Label htmlFor="rollNo">Roll Number</Label>
               <Input 
-                type="password" 
-                id="password" 
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2"
-                placeholder="Create a password"
+                id="rollNo"
+                name="rollNo"
+                type="text" 
+                placeholder="Your roll number"
+                value={formData.rollNo}
+                onChange={handleChange}
                 required
-                minLength={6}
               />
             </div>
-            
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm Password</label>
-              <Input 
-                type="password" 
-                id="confirmPassword" 
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2"
-                placeholder="Confirm your password"
-                required
-                minLength={6}
-              />
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="agreeTerms" 
-                name="agreeTerms"
-                checked={formData.agreeTerms}
-                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, agreeTerms: checked }))}
-              />
-              <label htmlFor="agreeTerms" className="text-sm text-gray-700 dark:text-gray-300">
-                I agree to the <a href="#" className="text-primary-600 dark:text-primary-400 hover:underline">Terms of Service</a> and <a href="#" className="text-primary-600 dark:text-primary-400 hover:underline">Privacy Policy</a>
-              </label>
-            </div>
-            
-            <Button 
-              type="submit" 
-              disabled={isSubmitting}
-              className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 rounded-md"
+          )}
+
+          {/* Submit button */}
+          <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600" disabled={isLoading}>
+            {isLoading ? 'Registering...' : 'Register'}
+          </Button>
+        </form>
+
+        <DialogFooter className="flex flex-col items-center sm:items-start">
+          <p className="text-sm text-gray-500 mt-2">
+            Already have an account?{' '}
+            <button
+              type="button"
+              onClick={switchToLogin}
+              className="text-orange-500 hover:underline font-semibold"
             >
-              {isSubmitting ? 'Registering...' : 'Register'}
-            </Button>
-            
-            <div className="text-center text-sm text-gray-600 dark:text-gray-400">
-              Already have an account? 
-              <button 
-                type="button" 
-                onClick={() => {
-                  onClose();
-                  onShowLogin(activeTab);
-                }} 
-                className="text-primary-600 dark:text-primary-400 hover:underline ml-1"
-              >
-                Login
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+              Login here
+            </button>
+          </p>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

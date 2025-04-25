@@ -1,145 +1,190 @@
 import { useState } from 'react';
-import { Link } from 'wouter';
-import { useTheme } from '../ThemeProvider';
+import { Link, useLocation } from 'wouter';
+import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { Sun, Moon, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, Menu } from 'lucide-react';
 
-export default function Navbar({ onOpenLoginModal, currentUser, onLogout }) {
-  const { isDarkMode, toggleDarkMode } = useTheme();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+export default function Navbar() {
+  const [isOpen, setIsOpen] = useState(false);
+  const { user, logout, setShowLoginModal } = useAuth();
+  const { isDarkMode, toggleTheme } = useTheme();
+  const [location] = useLocation();
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(prev => !prev);
+  // Navigation links
+  const navLinks = [
+    { name: 'Home', path: '/' },
+    { name: 'Amenities', path: '/amenities' },
+    { name: 'Gallery', path: '/gallery' },
+    { name: 'FAQ', path: '/faq' },
+    { name: 'Contact', path: '/contact' }
+  ];
+
+  // Handle login
+  const handleLoginClick = () => {
+    setShowLoginModal(true);
+  };
+
+  // Handle logout
+  const handleLogout = async () => {
+    await logout();
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-md">
-      <nav className="container mx-auto px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <img 
-            src="/hostel-logo.svg" 
-            alt="College Hostel Logo" 
-            className="h-10" 
-          />
-          <span className="font-accent font-bold text-xl text-primary dark:text-primary-300">College Hostel</span>
-        </div>
-        
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center space-x-6">
-          <Link href="/" className="font-medium hover:text-primary-600 dark:hover:text-primary-300 transition-colors">
-            Home
-          </Link>
-          <Link href="/#facilities" className="font-medium hover:text-primary-600 dark:hover:text-primary-300 transition-colors">
-            Facilities
-          </Link>
-          <Link href="/#gallery" className="font-medium hover:text-primary-600 dark:hover:text-primary-300 transition-colors">
-            Gallery
-          </Link>
-          <Link href="/#contact" className="font-medium hover:text-primary-600 dark:hover:text-primary-300 transition-colors">
-            Contact
-          </Link>
-          
-          {currentUser ? (
-            <div className="flex items-center space-x-4">
-              <Link 
-                href={`/${currentUser.role}/dashboard`} 
-                className="font-medium hover:text-primary-600 dark:hover:text-primary-300 transition-colors"
-              >
-                Dashboard
-              </Link>
-              <Button 
-                onClick={onLogout} 
-                variant="outline"
-              >
-                Logout
-              </Button>
+    <nav className="bg-gray-900 text-white shadow-md">
+      <div className="container mx-auto px-4 py-2">
+        <div className="flex justify-between items-center">
+          {/* Logo and Hostel Name */}
+          <Link href="/" className="flex items-center">
+            <img 
+              src="/geca.png" 
+              alt="College Logo" 
+              className="h-10 w-10 mr-2" 
+            />
+            <div>
+              <h1 className="text-base md:text-lg font-bold font-devanagari">
+                शासकीय अभियांत्रिकी महाविद्यालय छत्रपती संभाजीनगर वस्तीगृह
+              </h1>
             </div>
-          ) : (
-            <Button 
-              onClick={onOpenLoginModal}
-              className="bg-accent hover:bg-accent-600 text-white"
+          </Link>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-6">
+            {navLinks.map((link) => (
+              <Link 
+                key={link.path} 
+                href={link.path}
+                className={`hover:text-orange-500 transition-colors ${
+                  location === link.path ? 'text-orange-500 font-semibold' : ''
+                }`}
+              >
+                {link.name}
+              </Link>
+            ))}
+
+            {/* Theme Toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              aria-label="Toggle theme"
             >
-              Book Now
+              {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
-          )}
-          
-          {/* Dark Mode Toggle */}
-          <Button 
-            onClick={toggleDarkMode} 
-            variant="ghost" 
-            size="icon" 
-            className="rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
-          >
-            {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </Button>
-        </div>
-        
-        {/* Mobile menu button */}
-        <div className="md:hidden flex items-center space-x-4">
-          <Button 
-            onClick={toggleDarkMode} 
-            variant="ghost" 
-            size="icon" 
-            className="rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
-          >
-            {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </Button>
-          <Button
-            id="mobileMenuButton"
-            onClick={toggleMobileMenu}
-            variant="ghost"
-            size="icon"
-            className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-          >
-            <Menu className="h-6 w-6" />
-          </Button>
-        </div>
-      </nav>
-      
-      {/* Mobile Navigation Menu */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden bg-white dark:bg-gray-800 shadow-lg">
-          <div className="container mx-auto px-4 py-3 space-y-3">
-            <Link href="/" className="block font-medium hover:text-primary-600 dark:hover:text-primary-300 transition-colors py-2">
-              Home
-            </Link>
-            <Link href="/#facilities" className="block font-medium hover:text-primary-600 dark:hover:text-primary-300 transition-colors py-2">
-              Facilities
-            </Link>
-            <Link href="/#gallery" className="block font-medium hover:text-primary-600 dark:hover:text-primary-300 transition-colors py-2">
-              Gallery
-            </Link>
-            <Link href="/#contact" className="block font-medium hover:text-primary-600 dark:hover:text-primary-300 transition-colors py-2">
-              Contact
-            </Link>
-            
-            {currentUser ? (
-              <>
-                <Link 
-                  href={`/${currentUser.role}/dashboard`} 
-                  className="block font-medium hover:text-primary-600 dark:hover:text-primary-300 transition-colors py-2"
-                >
-                  Dashboard
-                </Link>
+
+            {/* Authentication */}
+            {user ? (
+              <div className="flex items-center space-x-4">
+                {user.role === 'student' ? (
+                  <Link href="/student/dashboard" className="hover:text-orange-500">
+                    Dashboard
+                  </Link>
+                ) : (
+                  <Link href="/faculty/dashboard" className="hover:text-orange-500">
+                    Dashboard
+                  </Link>
+                )}
                 <Button 
-                  onClick={onLogout} 
-                  variant="outline"
-                  className="w-full"
+                  variant="outline" 
+                  onClick={handleLogout}
+                  className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white"
                 >
                   Logout
                 </Button>
-              </>
+              </div>
             ) : (
               <Button 
-                onClick={onOpenLoginModal}
-                className="w-full bg-accent hover:bg-accent-600 text-white"
+                onClick={handleLoginClick}
+                className="bg-orange-500 hover:bg-orange-600 text-white"
               >
                 Book Now
               </Button>
             )}
           </div>
+
+          {/* Mobile Menu Button */}
+          <div className="md:hidden flex items-center">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              aria-label="Toggle theme"
+            >
+              {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsOpen(!isOpen)}
+              aria-label="Toggle menu"
+            >
+              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </Button>
+          </div>
         </div>
-      )}
-    </header>
+
+        {/* Mobile Navigation */}
+        {isOpen && (
+          <div className="md:hidden mt-4 pb-4 space-y-3">
+            {navLinks.map((link) => (
+              <Link 
+                key={link.path}
+                href={link.path}
+                className={`block py-2 hover:text-orange-500 transition-colors ${
+                  location === link.path ? 'text-orange-500 font-semibold' : ''
+                }`}
+                onClick={() => setIsOpen(false)}
+              >
+                {link.name}
+              </Link>
+            ))}
+
+            {/* Authentication */}
+            {user ? (
+              <div className="flex flex-col space-y-2 pt-2 border-t border-gray-700">
+                {user.role === 'student' ? (
+                  <Link 
+                    href="/student/dashboard" 
+                    className="block py-2 hover:text-orange-500"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                ) : (
+                  <Link 
+                    href="/faculty/dashboard" 
+                    className="block py-2 hover:text-orange-500"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                )}
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    handleLogout();
+                    setIsOpen(false);
+                  }}
+                  className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white"
+                >
+                  Logout
+                </Button>
+              </div>
+            ) : (
+              <Button 
+                onClick={() => {
+                  handleLoginClick();
+                  setIsOpen(false);
+                }}
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white mt-2"
+              >
+                Book Now
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
+    </nav>
   );
 }
