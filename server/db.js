@@ -1,7 +1,14 @@
-const { MongoClient, ObjectId } = require('mongodb');
+import { MongoClient, ObjectId } from 'mongodb';
 
 // Connection URL
-const url = process.env.MONGODB_URI || 'mongodb://localhost:27017';
+const url = process.env.MONGODB_URI;
+console.log("MongoDB Connection: URI exists =", !!url);
+
+if (!url) {
+  console.error("ERROR: MONGODB_URI environment variable is not set!");
+  console.error("Please set a valid MongoDB connection string as MONGODB_URI");
+}
+
 const dbName = 'hostelManagementSystem';
 
 let db;
@@ -49,7 +56,7 @@ const toObjectId = (id) => {
   }
 };
 
-module.exports = {
+export {
   connectToDatabase,
   getDb,
   ObjectId,

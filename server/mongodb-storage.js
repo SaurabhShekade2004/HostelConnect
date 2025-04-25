@@ -1,5 +1,5 @@
-const { getDb, toObjectId } = require('./db');
-const bcrypt = require('bcrypt');
+import { getDb, toObjectId } from './db.js';
+import bcrypt from 'bcrypt';
 
 class MongoDBStorage {
   async init() {
@@ -216,4 +216,4 @@ class MongoDBStorage {
 
 // Create and export storage instance
 const storage = new MongoDBStorage();
-module.exports = { storage };
+export { storage };

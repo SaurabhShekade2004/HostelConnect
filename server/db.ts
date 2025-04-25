@@ -4,11 +4,11 @@ import { MongoClient, ObjectId } from 'mongodb';
 const url = process.env.MONGODB_URI || 'mongodb://localhost:27017';
 const dbName = 'hostelManagementSystem';
 
-let db: any;
 let client: MongoClient;
+let db: any;
 
 // Connect to MongoDB
-const connectToDatabase = async () => {
+export async function connectToDatabase() {
   try {
     if (db) return db;
     
@@ -30,28 +30,21 @@ const connectToDatabase = async () => {
     console.error('Database connection error:', error);
     throw error;
   }
-};
+}
 
 // Get MongoDB database instance
-const getDb = async () => {
+export async function getDb() {
   if (!db) {
     return await connectToDatabase();
   }
   return db;
-};
+}
 
 // Helper to convert string IDs to ObjectId
-const toObjectId = (id: string) => {
+export function toObjectId(id: string) {
   try {
     return new ObjectId(id);
   } catch (error) {
     return null;
   }
-};
-
-export {
-  connectToDatabase,
-  getDb,
-  ObjectId,
-  toObjectId
-};
+}

@@ -1,272 +1,136 @@
-import { db } from "@db";
-import * as schema from "@shared/schema";
-import { eq, and, desc, asc, sql } from "drizzle-orm";
-import { randomUUID } from "crypto";
+import { storage as localStorage } from './local-storage.js';
 
+// Use local file-based storage instead of MongoDB
 class Storage {
   async init() {
-    // Check connection to database
     try {
-      await db.execute(sql`SELECT 1`);
-      console.log("Database connection successful");
+      console.log('Initializing local storage...');
+      return await localStorage.init();
     } catch (error) {
-      console.error("Database connection failed:", error);
+      console.error('Storage initialization error:', error);
       throw error;
     }
   }
 
   // User methods
   async getUserByEmail(email: string) {
-    return await db.query.users.findFirst({
-      where: eq(schema.users.email, email)
-    });
+    return await localStorage.getUserByEmail(email);
   }
 
-  async getUserById(id: number) {
-    return await db.query.users.findFirst({
-      where: eq(schema.users.id, id)
-    });
+  async getUserById(id: number | string) {
+    return await localStorage.getUserById(id);
   }
 
-  async createUser(userData: Omit<schema.UserInsert, "id">) {
-    const [user] = await db.insert(schema.users).values(userData).returning();
-    return user.id;
+  async createUser(userData: any) {
+    return await localStorage.createUser(userData);
   }
 
-  async updateUserProfileImage(userId: number, profileImageUrl: string) {
-    await db.update(schema.users)
-      .set({ profileImage: profileImageUrl })
-      .where(eq(schema.users.id, userId));
-    return true;
+  async updateUserProfileImage(userId: number | string, profileImageUrl: string) {
+    return await localStorage.updateUserProfileImage(userId, profileImageUrl);
   }
 
-  async getStudentById(studentId: number) {
-    return await db.query.users.findFirst({
-      where: and(
-        eq(schema.users.id, studentId),
-        eq(schema.users.role, 'student')
-      )
-    });
+  async getStudentById(studentId: number | string) {
+    return await localStorage.getStudentById(studentId);
   }
 
   // Application methods
-  async getApplicationByStudentId(studentId: number) {
-    return await db.query.applications.findFirst({
-      where: eq(schema.applications.studentId, studentId)
-    });
+  async getApplicationByStudentId(studentId: number | string) {
+    return await localStorage.getApplicationByStudentId(studentId);
   }
 
   async getApplicationById(applicationId: string | number) {
-    const id = typeof applicationId === 'string' 
-      ? parseInt(applicationId, 10) 
-      : applicationId;
-    
-    if (isNaN(id)) {
-      return null;
-    }
-    
-    const application = await db.query.applications.findFirst({
-      where: eq(schema.applications.id, id)
-    });
-    
-    if (application) {
-      // Get allotment if exists
-      const allotment = await this.getAllotmentByApplicationId(application.applicationId);
-      if (allotment) {
-        return { ...application, allotment };
-      }
-    }
-    
-    return application;
+    return await localStorage.getApplicationById(applicationId);
   }
 
-  async createApplication(applicationData: Omit<schema.ApplicationInsert, "id">) {
-    const [application] = await db.insert(schema.applications)
-      .values(applicationData)
-      .returning();
-    return application;
+  async createApplication(applicationData: any) {
+    return await localStorage.createApplication(applicationData);
   }
 
   async updateApplicationStatus(applicationId: string | number, status: string) {
-    const id = typeof applicationId === 'string' 
-      ? parseInt(applicationId, 10) 
-      : applicationId;
-    
-    if (isNaN(id)) {
-      throw new Error('Invalid application ID');
-    }
-    
-    await db.update(schema.applications)
-      .set({ status })
-      .where(eq(schema.applications.id, id));
-    return true;
+    return await localStorage.updateApplicationStatus(applicationId, status);
   }
 
   async getApplicationsByStatus(status?: string) {
-    if (status && status !== 'all') {
-      return await db.query.applications.findMany({
-        where: eq(schema.applications.status, status),
-        orderBy: [desc(schema.applications.cgpa)], // Sort by CGPA
-      });
-    } else {
-      return await db.query.applications.findMany({
-        orderBy: [desc(schema.applications.cgpa)], // Sort by CGPA
-      });
-    }
+    return await localStorage.getApplicationsByStatus(status);
   }
 
   async countPendingApplications() {
-    const result = await db.select({ count: sql<number>`count(*)` })
-      .from(schema.applications)
-      .where(eq(schema.applications.status, 'pending'));
-    return result[0]?.count || 0;
+    return await localStorage.countPendingApplications();
   }
 
   async getRecentApplications(limit = 5) {
-    return await db.query.applications.findMany({
-      where: eq(schema.applications.status, 'pending'),
-      orderBy: [desc(schema.applications.createdAt)],
-      limit
-    });
+    return await localStorage.getRecentApplications(limit);
   }
 
   // Allotment methods
-  async getAllotmentByStudentId(studentId: number) {
-    return await db.query.allotments.findFirst({
-      where: eq(schema.allotments.studentId, studentId)
-    });
+  async getAllotmentByStudentId(studentId: number | string) {
+    return await localStorage.getAllotmentByStudentId(studentId);
   }
 
   async getAllotmentByApplicationId(applicationId: string) {
-    return await db.query.allotments.findFirst({
-      where: eq(schema.allotments.applicationId, applicationId)
-    });
+    return await localStorage.getAllotmentByApplicationId(applicationId);
   }
 
-  async createAllotment(allotmentData: Omit<schema.AllotmentInsert, "id">) {
-    const [allotment] = await db.insert(schema.allotments)
-      .values(allotmentData)
-      .returning();
-    return allotment;
+  async createAllotment(allotmentData: any) {
+    return await localStorage.createAllotment(allotmentData);
   }
 
   async checkRoomAvailability(hostelBuilding: string, roomNumber: string, bedNumber: string) {
-    const existingAllotment = await db.query.allotments.findFirst({
-      where: and(
-        eq(schema.allotments.hostelBuilding, hostelBuilding),
-        eq(schema.allotments.roomNumber, roomNumber),
-        eq(schema.allotments.bedNumber, bedNumber),
-        eq(schema.allotments.status, 'active')
-      )
-    });
-    return !existingAllotment; // Room is available if no allotment exists
+    return await localStorage.checkRoomAvailability(hostelBuilding, roomNumber, bedNumber);
   }
 
   async countAllottedStudents() {
-    const result = await db.select({ count: sql<number>`count(*)` })
-      .from(schema.allotments)
-      .where(eq(schema.allotments.status, 'active'));
-    return result[0]?.count || 0;
+    return await localStorage.countAllottedStudents();
   }
 
   async countTotalStudents() {
-    const result = await db.select({ count: sql<number>`count(*)` })
-      .from(schema.users)
-      .where(eq(schema.users.role, 'student'));
-    return result[0]?.count || 0;
+    return await localStorage.countTotalStudents();
   }
 
   // Complaint methods
-  async createComplaint(complaintData: Omit<schema.ComplaintInsert, "id">) {
-    const [complaint] = await db.insert(schema.complaints)
-      .values(complaintData)
-      .returning();
-    return complaint;
+  async createComplaint(complaintData: any) {
+    return await localStorage.createComplaint(complaintData);
   }
 
   async getComplaintsByStatus(status?: string) {
-    if (status && status !== 'all') {
-      return await db.query.complaints.findMany({
-        where: eq(schema.complaints.status, status),
-        orderBy: [desc(schema.complaints.createdAt)]
-      });
-    } else {
-      return await db.query.complaints.findMany({
-        orderBy: [desc(schema.complaints.createdAt)]
-      });
-    }
+    return await localStorage.getComplaintsByStatus(status);
   }
 
-  async updateComplaint(complaintId: string | number, updateData: Partial<schema.ComplaintInsert>) {
-    const id = typeof complaintId === 'string' 
-      ? parseInt(complaintId, 10) 
-      : complaintId;
-    
-    if (isNaN(id)) {
-      throw new Error('Invalid complaint ID');
-    }
-    
-    const [updatedComplaint] = await db.update(schema.complaints)
-      .set(updateData)
-      .where(eq(schema.complaints.id, id))
-      .returning();
-    return updatedComplaint;
+  async updateComplaint(complaintId: string | number, updateData: any) {
+    return await localStorage.updateComplaint(complaintId, updateData);
   }
 
   async countUnresolvedComplaints() {
-    const result = await db.select({ count: sql<number>`count(*)` })
-      .from(schema.complaints)
-      .where(
-        sql`${schema.complaints.status} != 'resolved'`
-      );
-    return result[0]?.count || 0;
+    return await localStorage.countUnresolvedComplaints();
   }
 
   async countComplaintsByStatus(status: string) {
-    const result = await db.select({ count: sql<number>`count(*)` })
-      .from(schema.complaints)
-      .where(eq(schema.complaints.status, status));
-    return result[0]?.count || 0;
+    return await localStorage.countComplaintsByStatus(status);
   }
 
   // Rector message methods
-  async createRectorMessage(messageData: Omit<schema.RectorMessageInsert, "id">) {
-    const [message] = await db.insert(schema.rectorMessages)
-      .values(messageData)
-      .returning();
-    return message;
+  async createRectorMessage(messageData: any) {
+    return await localStorage.createRectorMessage(messageData);
   }
 
   // Help question methods
-  async createHelpQuestion(questionData: Omit<schema.HelpQuestionInsert, "id">) {
-    const [question] = await db.insert(schema.helpQuestions)
-      .values(questionData)
-      .returning();
-    return question;
+  async createHelpQuestion(questionData: any) {
+    return await localStorage.createHelpQuestion(questionData);
   }
 
   // Contact message methods
-  async createContactMessage(messageData: Omit<schema.ContactMessageInsert, "id">) {
-    const [message] = await db.insert(schema.contactMessages)
-      .values(messageData)
-      .returning();
-    return message;
+  async createContactMessage(messageData: any) {
+    return await localStorage.createContactMessage(messageData);
   }
 
   // Notice methods
   async getNotices(limit = 5) {
-    return await db.query.notices.findMany({
-      orderBy: [desc(schema.notices.date)],
-      limit
-    });
+    return await localStorage.getNotices(limit);
   }
 
   // Notification methods
   async getNotifications(limit = 5) {
-    return await db.query.notifications.findMany({
-      orderBy: [desc(schema.notifications.date)],
-      limit
-    });
+    return await localStorage.getNotifications(limit);
   }
 }
 
