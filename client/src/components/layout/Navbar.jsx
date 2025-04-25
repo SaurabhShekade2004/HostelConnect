@@ -39,10 +39,10 @@ export default function Navbar() {
             <img 
               src="/geca.png" 
               alt="College Logo" 
-              className="h-10 w-10 mr-2" 
+              className="h-12 w-12 mr-2" 
             />
             <div>
-              <h1 className="text-base md:text-lg font-bold font-devanagari">
+              <h1 className="text-sm md:text-base font-bold font-devanagari">
                 शासकीय अभियांत्रिकी महाविद्यालय छत्रपती संभाजीनगर वस्तीगृह
               </h1>
             </div>
