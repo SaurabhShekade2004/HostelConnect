@@ -576,8 +576,10 @@ export default function FacultyDashboard() {
                                   </>
                                 )}
                                 {app.status === 'approved' && !app.isAllotted && (
-                                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                                    Allot Room
+                                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700" asChild>
+                                    <Link href={`/faculty/allot-room?applicationId=${app._id}`}>
+                                      Allot Room
+                                    </Link>
                                   </Button>
                                 )}
                               </div>
