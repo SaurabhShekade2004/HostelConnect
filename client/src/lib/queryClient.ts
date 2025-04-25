@@ -16,16 +16,19 @@ export async function apiRequest(
   const user = localStorage.getItem('hostelUser');
   const token = user ? JSON.parse(user).token : null;
   
+  // Check if data is FormData
+  const isFormData = data instanceof FormData;
+  
   // Build headers with auth token if available
   const headers: Record<string, string> = {
-    ...(data ? { "Content-Type": "application/json" } : {}),
+    ...(data && !isFormData ? { "Content-Type": "application/json" } : {}),
     ...(token ? { "Authorization": `Bearer ${token}` } : {})
   };
 
   const res = await fetch(url, {
     method,
     headers,
-    body: data ? JSON.stringify(data) : undefined,
+    body: isFormData ? data as FormData : data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
 

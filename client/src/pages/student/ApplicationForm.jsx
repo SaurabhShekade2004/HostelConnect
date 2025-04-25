@@ -57,15 +57,8 @@ export default function ApplicationForm() {
       // Append agreement as string
       formDataObj.append('agreeToRules', data.agreeToRules.toString());
       
-      // Send request
-      return apiRequest({
-        url: '/api/student/application',
-        method: 'POST',
-        data: formDataObj,
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      // Send request - apiRequest expects (method, url, data) as separate parameters
+      return apiRequest('POST', '/api/student/application', formDataObj);
     },
     onSuccess: (data) => {
       toast({
@@ -199,9 +192,14 @@ export default function ApplicationForm() {
   const handleSubmit = (e) => {
     e.preventDefault();
     
+    // Add console logs for debugging
+    console.log('Form submission attempt');
+    
     if (validateForm()) {
+      console.log('Form is valid, submitting data');
       submitMutation.mutate(formData);
     } else {
+      console.log('Form validation failed:', errors);
       // Scroll to first error
       const firstErrorField = Object.keys(errors)[0];
       if (firstErrorField) {
