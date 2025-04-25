@@ -391,7 +391,7 @@ export default function FacultyDashboard() {
                         </thead>
                         <tbody>
                           {data.recentApplications.map((app) => (
-                            <tr key={app.id} className="border-b dark:border-gray-800">
+                            <tr key={app._id} className="border-b dark:border-gray-800">
                               <td className="py-3">{app.name}</td>
                               <td className="py-3">{app.rollNo}</td>
                               <td className="py-3">{app.cgpa}</td>
@@ -399,7 +399,7 @@ export default function FacultyDashboard() {
                               <td className="py-3">{getStatusBadge(app.status)}</td>
                               <td className="py-3 text-right">
                                 <Button variant="outline" size="sm" asChild>
-                                  <Link href={`/faculty/applications/${app.id}`}>
+                                  <Link href={`/faculty/applications/${app._id}`}>
                                     View
                                   </Link>
                                 </Button>
@@ -440,7 +440,7 @@ export default function FacultyDashboard() {
                 ) : data?.recentComplaints && data.recentComplaints.length > 0 ? (
                   <div className="space-y-4">
                     {data.recentComplaints.map((complaint) => (
-                      <div key={complaint.id} className="border-b pb-4 last:border-0 last:pb-0">
+                      <div key={complaint._id} className="border-b pb-4 last:border-0 last:pb-0">
                         <div className="flex justify-between">
                           <div>
                             <h4 className="font-medium">{complaint.title}</h4>
@@ -457,7 +457,7 @@ export default function FacultyDashboard() {
                           <div className="flex flex-col items-end gap-2">
                             {getStatusBadge(complaint.status)}
                             <Button variant="outline" size="sm" asChild>
-                              <Link href={`/faculty/complaints/${complaint.id}`}>View</Link>
+                              <Link href={`/faculty/complaints/${complaint._id}`}>View</Link>
                             </Button>
                           </div>
                         </div>
@@ -541,7 +541,7 @@ export default function FacultyDashboard() {
                       </thead>
                       <tbody>
                         {filterApplications(data.applications).map((app) => (
-                          <tr key={app.id} className="border-b dark:border-gray-800">
+                          <tr key={app._id} className="border-b dark:border-gray-800">
                             <td className="py-3">{app.name}</td>
                             <td className="py-3">{app.rollNo}</td>
                             <td className="py-3 font-medium text-orange-600">{app.cgpa}</td>
@@ -551,7 +551,7 @@ export default function FacultyDashboard() {
                             <td className="py-3 text-right">
                               <div className="flex justify-end gap-2">
                                 <Button variant="outline" size="sm" asChild>
-                                  <Link href={`/faculty/applications/${app.id}`}>
+                                  <Link href={`/faculty/applications/${app._id}`}>
                                     View
                                   </Link>
                                 </Button>
@@ -560,18 +560,18 @@ export default function FacultyDashboard() {
                                     <Button 
                                       size="sm" 
                                       className="bg-green-600 hover:bg-green-700"
-                                      onClick={() => approveMutation.mutate(app.id)}
+                                      onClick={() => approveMutation.mutate(app._id)}
                                       disabled={approveMutation.isPending}
                                     >
-                                      {approveMutation.isPending && approveMutation.variables === app.id ? 'Approving...' : 'Approve'}
+                                      {approveMutation.isPending && approveMutation.variables === app._id ? 'Approving...' : 'Approve'}
                                     </Button>
                                     <Button 
                                       variant="destructive" 
                                       size="sm"
-                                      onClick={() => rejectMutation.mutate(app.id)}
+                                      onClick={() => rejectMutation.mutate(app._id)}
                                       disabled={rejectMutation.isPending}
                                     >
-                                      {rejectMutation.isPending && rejectMutation.variables === app.id ? 'Rejecting...' : 'Reject'}
+                                      {rejectMutation.isPending && rejectMutation.variables === app._id ? 'Rejecting...' : 'Reject'}
                                     </Button>
                                   </>
                                 )}
