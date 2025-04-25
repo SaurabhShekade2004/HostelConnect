@@ -11,24 +11,52 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { FileText, Users, Search, Eye, Check, X } from 'lucide-react';
 
-export default function AllotRoom({ currentUser, onLogout }) {
+export default function AllotRoom() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('pending');
   const [selectedApplicationId, setSelectedApplicationId] = useState(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isAllotModalOpen, setIsAllotModalOpen] = useState(false);
+  const [roomAllotmentData, setRoomAllotmentData] = useState({
+    hostelBuilding: '',
+    roomNumber: '',
+    bedNumber: ''
+  });
+  const [currentRoomOccupancy, setCurrentRoomOccupancy] = useState(0);
 
-  // Fetch applications
+  // Fetch applications - only get pending applications
   const { data: applications, isLoading: isLoadingApplications } = useQuery({
-    queryKey: ['/api/faculty/applications', activeTab],
-    enabled: !!currentUser
+    queryKey: ['/api/faculty/applications', 'pending'],
+    queryFn: async () => {
+      const response = await apiRequest('GET', `/api/faculty/applications/pending`);
+      return response.json();
+    }
   });
 
   // Fetch single application details
   const { data: applicationDetails, isLoading: isLoadingDetails } = useQuery({
     queryKey: ['/api/faculty/applications', selectedApplicationId],
+    queryFn: async () => {
+      if (!selectedApplicationId) return null;
+      const response = await apiRequest('GET', `/api/faculty/applications/${selectedApplicationId}`);
+      return response.json();
+    },
     enabled: !!selectedApplicationId,
   });
+
+  // Check room occupancy
+  const checkRoomOccupancy = async (building, roomNumber) => {
+    try {
+      const response = await apiRequest('GET', `/api/faculty/rooms/${building}/${roomNumber}/occupancy`);
+      const data = await response.json();
+      setCurrentRoomOccupancy(data.occupancy);
+      return data.occupancy;
+    } catch (error) {
+      console.error("Error checking room occupancy:", error);
+      return 0;
+    }
+  };
 
   // Room allotment mutation
   const allotRoomMutation = useMutation({
@@ -40,6 +68,14 @@ export default function AllotRoom({ currentUser, onLogout }) {
         title: "Room Allotted",
         description: "The student has been successfully allotted to the room.",
         variant: "success",
+      });
+      
+      // Close modal and reset form
+      setIsAllotModalOpen(false);
+      setRoomAllotmentData({
+        hostelBuilding: '',
+        roomNumber: '',
+        bedNumber: ''
       });
       
       // Invalidate queries to refresh data
@@ -295,19 +331,135 @@ export default function AllotRoom({ currentUser, onLogout }) {
                 <Button 
                   onClick={() => {
                     setIsDetailsModalOpen(false);
-                    // For now, we'll use a simulated allotment data for demo purposes
-                    // In a real app, this would be from a form
-                    handleAllotRoom(applicationDetails.id, {
-                      hostelBuilding: 'A Block',
-                      roomNumber: '101',
-                      bedNumber: '1'
-                    });
+                    setSelectedApplicationId(applicationDetails.id);
+                    setIsAllotModalOpen(true);
                   }}
+                  className="bg-orange-500 hover:bg-orange-600"
                 >
                   <Check className="h-4 w-4 mr-2" />
                   Allot Room
                 </Button>
               )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        {/* Room Allocation Modal */}
+        <Dialog open={isAllotModalOpen} onOpenChange={setIsAllotModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Allocate Room</DialogTitle>
+              <DialogDescription>
+                Assign hostel room to student. Maximum 2 students per room allowed.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Hostel Building</label>
+                <select
+                  className="w-full p-2 border rounded-md"
+                  value={roomAllotmentData.hostelBuilding}
+                  onChange={(e) => {
+                    setRoomAllotmentData(prev => ({
+                      ...prev,
+                      hostelBuilding: e.target.value,
+                      roomNumber: '',
+                      bedNumber: ''
+                    }));
+                  }}
+                >
+                  <option value="">Select Hostel Building</option>
+                  <option value="A Block">A Block</option>
+                  <option value="B Block">B Block</option>
+                  <option value="C Block">C Block</option>
+                  <option value="D Block">D Block</option>
+                </select>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Room Number</label>
+                <input 
+                  type="text"
+                  className="w-full p-2 border rounded-md"
+                  placeholder="e.g., 101, 102, 103"
+                  value={roomAllotmentData.roomNumber}
+                  onChange={async (e) => {
+                    const roomNumber = e.target.value;
+                    setRoomAllotmentData(prev => ({
+                      ...prev,
+                      roomNumber,
+                      bedNumber: ''
+                    }));
+                    
+                    // If both building and room number are provided, check occupancy
+                    if (roomAllotmentData.hostelBuilding && roomNumber) {
+                      await checkRoomOccupancy(roomAllotmentData.hostelBuilding, roomNumber);
+                    }
+                  }}
+                />
+                {currentRoomOccupancy > 0 && (
+                  <p className="text-sm text-amber-600">
+                    This room currently has {currentRoomOccupancy} student{currentRoomOccupancy > 1 ? 's' : ''}.
+                    {currentRoomOccupancy >= 2 && ' No more students can be added to this room.'}
+                  </p>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Bed Number</label>
+                <select
+                  className="w-full p-2 border rounded-md"
+                  value={roomAllotmentData.bedNumber}
+                  onChange={(e) => {
+                    setRoomAllotmentData(prev => ({
+                      ...prev,
+                      bedNumber: e.target.value
+                    }));
+                  }}
+                  disabled={currentRoomOccupancy >= 2 || !roomAllotmentData.roomNumber || !roomAllotmentData.hostelBuilding}
+                >
+                  <option value="">Select Bed Number</option>
+                  <option value="1" disabled={currentRoomOccupancy > 0 && currentRoomOccupancy.includes(1)}>Bed 1</option>
+                  <option value="2" disabled={currentRoomOccupancy > 0 && currentRoomOccupancy.includes(2)}>Bed 2</option>
+                </select>
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsAllotModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  if (selectedApplicationId && 
+                      roomAllotmentData.hostelBuilding && 
+                      roomAllotmentData.roomNumber && 
+                      roomAllotmentData.bedNumber) {
+                    handleAllotRoom(selectedApplicationId, roomAllotmentData);
+                  } else {
+                    toast({
+                      title: "Missing Information",
+                      description: "Please fill in all required fields.",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+                disabled={
+                  !selectedApplicationId || 
+                  !roomAllotmentData.hostelBuilding || 
+                  !roomAllotmentData.roomNumber || 
+                  !roomAllotmentData.bedNumber ||
+                  currentRoomOccupancy >= 2 ||
+                  allotRoomMutation.isPending
+                }
+                className="bg-orange-500 hover:bg-orange-600"
+              >
+                {allotRoomMutation.isPending ? "Allocating..." : "Allocate Room"}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

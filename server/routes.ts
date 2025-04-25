@@ -458,6 +458,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/faculty/applications/pending', authenticate, authorize(['faculty']), async (req, res) => {
+    try {
+      // Get pending applications
+      const applications = await storage.getApplicationsByStatus('pending');
+      
+      // Get application summary
+      const summary = {
+        pending: await storage.countPendingApplications(),
+        allotted: await storage.countAllottedStudents(),
+        availableBeds: 300 - await storage.countAllottedStudents(), // Example, replace with actual calculation
+        totalStudents: await storage.countTotalStudents()
+      };
+      
+      // Sort by CGPA in descending order
+      const sortedApplications = applications.sort((a, b) => b.cgpa - a.cgpa);
+      
+      return res.status(200).json({
+        applications: sortedApplications,
+        summary
+      });
+    } catch (error) {
+      console.error('Error fetching pending applications:', error);
+      return res.status(500).json({ message: 'Server error' });
+    }
+  });
+  
   app.get('/api/faculty/applications/:status?', authenticate, authorize(['faculty']), async (req, res) => {
     try {
       const status = req.params.status;
