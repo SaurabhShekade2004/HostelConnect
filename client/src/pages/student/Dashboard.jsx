@@ -270,7 +270,7 @@ export default function StudentDashboard() {
                 ) : data?.notices && data.notices.length > 0 ? (
                   <div className="space-y-4">
                     {data.notices.map((notice, index) => (
-                      <div key={notice.id} className="space-y-2">
+                      <div key={notice._id} className="space-y-2">
                         {index > 0 && <Separator />}
                         <div className="pt-2">
                           <div className="flex justify-between items-start">
