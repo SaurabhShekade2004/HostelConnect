@@ -16,6 +16,8 @@ export async function apiRequest(
   const user = localStorage.getItem('hostelUser');
   const token = user ? JSON.parse(user).token : null;
   
+  console.log(`Making ${method} request to ${url}`, { hasToken: !!token });
+  
   // Check if data is FormData
   const isFormData = data instanceof FormData;
   
@@ -25,6 +27,10 @@ export async function apiRequest(
     ...(token ? { "Authorization": `Bearer ${token}` } : {})
   };
 
+  if (isFormData && token) {
+    console.log("FormData submission with auth token");
+  }
+
   const res = await fetch(url, {
     method,
     headers,
@@ -32,7 +38,13 @@ export async function apiRequest(
     credentials: "include",
   });
 
-  await throwIfResNotOk(res);
+  if (!res.ok) {
+    console.error(`Request failed: ${res.status} ${res.statusText}`);
+    const errorText = await res.text();
+    console.error(`Error details: ${errorText}`);
+    throw new Error(`${res.status}: ${errorText || res.statusText}`);
+  }
+  
   return res;
 }
 
@@ -46,22 +58,35 @@ export const getQueryFn: <T>(options: {
     const user = localStorage.getItem('hostelUser');
     const token = user ? JSON.parse(user).token : null;
     
+    console.log(`Making GET request to ${queryKey[0]}`, { hasToken: !!token });
+    
     // Build headers with auth token if available
     const headers: Record<string, string> = {
       ...(token ? { "Authorization": `Bearer ${token}` } : {})
     };
     
-    const res = await fetch(queryKey[0] as string, {
-      credentials: "include",
-      headers
-    });
-
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
+    try {
+      const res = await fetch(queryKey[0] as string, {
+        credentials: "include",
+        headers
+      });
+  
+      if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+        return null;
+      }
+  
+      if (!res.ok) {
+        console.error(`Request failed: ${res.status} ${res.statusText}`);
+        const errorText = await res.text();
+        console.error(`Error details: ${errorText}`);
+        throw new Error(`${res.status}: ${errorText || res.statusText}`);
+      }
+      
+      return await res.json();
+    } catch (error) {
+      console.error(`Error fetching ${queryKey[0]}:`, error);
+      throw error;
     }
-
-    await throwIfResNotOk(res);
-    return await res.json();
   };
 
 export const queryClient = new QueryClient({

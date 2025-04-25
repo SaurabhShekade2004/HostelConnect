@@ -542,12 +542,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/faculty/applications/:id/approve', authenticate, authorize(['faculty']), async (req, res) => {
     try {
       const applicationId = req.params.id;
+      console.log('Approving application with ID:', applicationId);
       
       // Get application details
-      const application = await storage.getApplicationById(applicationId);
+      let application = await storage.getApplicationById(applicationId);
+      
+      // If not found directly, try finding in all applications
       if (!application) {
-        return res.status(404).json({ message: 'Application not found' });
+        const applications = await storage.getApplicationsByStatus();
+        application = applications.find(app => app._id === applicationId);
+        
+        if (!application) {
+          return res.status(404).json({ message: 'Application not found' });
+        }
       }
+      
+      const actualId = application._id;
+      console.log('Found application:', application);
       
       // Check if application is not already processed
       if (application.status !== 'pending') {
@@ -555,11 +566,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Update application status to approved
-      await storage.updateApplicationStatus(applicationId, 'approved');
+      await storage.updateApplicationStatus(actualId, 'approved');
       
       return res.status(200).json({ 
         message: 'Application approved successfully',
-        applicationId
+        applicationId: actualId
       });
     } catch (error) {
       console.error('Error approving application:', error);
@@ -572,12 +583,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const applicationId = req.params.id;
       const { reason } = req.body;
+      console.log('Rejecting application with ID:', applicationId);
       
       // Get application details
-      const application = await storage.getApplicationById(applicationId);
+      let application = await storage.getApplicationById(applicationId);
+      
+      // If not found directly, try finding in all applications
       if (!application) {
-        return res.status(404).json({ message: 'Application not found' });
+        const applications = await storage.getApplicationsByStatus();
+        application = applications.find(app => app._id === applicationId);
+        
+        if (!application) {
+          return res.status(404).json({ message: 'Application not found' });
+        }
       }
+      
+      const actualId = application._id;
+      console.log('Found application to reject:', application);
       
       // Check if application is not already processed
       if (application.status !== 'pending') {
@@ -585,11 +607,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Update application status to rejected
-      await storage.updateApplicationStatus(applicationId, 'rejected');
+      await storage.updateApplicationStatus(actualId, 'rejected');
       
       return res.status(200).json({ 
         message: 'Application rejected successfully',
-        applicationId
+        applicationId: actualId
       });
     } catch (error) {
       console.error('Error rejecting application:', error);
