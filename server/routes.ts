@@ -525,6 +525,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ message: 'Server error' });
     }
   });
+  
+  // Approve application
+  app.post('/api/faculty/applications/:id/approve', authenticate, authorize(['faculty']), async (req, res) => {
+    try {
+      const applicationId = req.params.id;
+      
+      // Get application details
+      const application = await storage.getApplicationById(applicationId);
+      if (!application) {
+        return res.status(404).json({ message: 'Application not found' });
+      }
+      
+      // Check if application is not already processed
+      if (application.status !== 'pending') {
+        return res.status(400).json({ message: 'Application has already been processed' });
+      }
+      
+      // Update application status to approved
+      await storage.updateApplicationStatus(applicationId, 'approved');
+      
+      return res.status(200).json({ 
+        message: 'Application approved successfully',
+        applicationId
+      });
+    } catch (error) {
+      console.error('Error approving application:', error);
+      return res.status(500).json({ message: 'Server error' });
+    }
+  });
+  
+  // Reject application
+  app.post('/api/faculty/applications/:id/reject', authenticate, authorize(['faculty']), async (req, res) => {
+    try {
+      const applicationId = req.params.id;
+      const { reason } = req.body;
+      
+      // Get application details
+      const application = await storage.getApplicationById(applicationId);
+      if (!application) {
+        return res.status(404).json({ message: 'Application not found' });
+      }
+      
+      // Check if application is not already processed
+      if (application.status !== 'pending') {
+        return res.status(400).json({ message: 'Application has already been processed' });
+      }
+      
+      // Update application status to rejected
+      await storage.updateApplicationStatus(applicationId, 'rejected');
+      
+      return res.status(200).json({ 
+        message: 'Application rejected successfully',
+        applicationId
+      });
+    } catch (error) {
+      console.error('Error rejecting application:', error);
+      return res.status(500).json({ message: 'Server error' });
+    }
+  });
 
   app.post('/api/faculty/allot-room/:applicationId', authenticate, authorize(['faculty']), async (req: any, res) => {
     try {

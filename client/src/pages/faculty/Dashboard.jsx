@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'wouter';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -11,12 +11,15 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ClipboardList, FileText, MessageCircle, Building, Users, Clock, Search } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 
 export default function FacultyDashboard() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   // Fetch dashboard data
   const { data, isLoading, error } = useQuery({
@@ -24,6 +27,52 @@ export default function FacultyDashboard() {
     queryFn: async () => {
       const response = await apiRequest('GET', '/api/faculty/dashboard');
       return response.json();
+    }
+  });
+  
+  // Approve application mutation
+  const approveMutation = useMutation({
+    mutationFn: async (applicationId) => {
+      const response = await apiRequest('POST', `/api/faculty/applications/${applicationId}/approve`);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Application approved",
+        description: "The application has been approved successfully.",
+        variant: "success",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/faculty/dashboard'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to approve application. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+  
+  // Reject application mutation
+  const rejectMutation = useMutation({
+    mutationFn: async (applicationId) => {
+      const response = await apiRequest('POST', `/api/faculty/applications/${applicationId}/reject`);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Application rejected",
+        description: "The application has been rejected successfully.",
+        variant: "success",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/faculty/dashboard'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to reject application. Please try again.",
+        variant: "destructive",
+      });
     }
   });
 
@@ -248,10 +297,7 @@ export default function FacultyDashboard() {
                         <span className="text-sm text-gray-500 dark:text-gray-400">Male:</span>
                         <span className="text-base font-medium">{data?.studentStats?.male || 0}</span>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-500 dark:text-gray-400">Female:</span>
-                        <span className="text-base font-medium">{data?.studentStats?.female || 0}</span>
-                      </div>
+
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-500 dark:text-gray-400">First Year:</span>
                         <span className="text-base font-medium">{data?.studentStats?.firstYear || 0}</span>
@@ -511,11 +557,21 @@ export default function FacultyDashboard() {
                                 </Button>
                                 {app.status === 'pending' && (
                                   <>
-                                    <Button size="sm" className="bg-green-600 hover:bg-green-700">
-                                      Approve
+                                    <Button 
+                                      size="sm" 
+                                      className="bg-green-600 hover:bg-green-700"
+                                      onClick={() => approveMutation.mutate(app.id)}
+                                      disabled={approveMutation.isPending}
+                                    >
+                                      {approveMutation.isPending && approveMutation.variables === app.id ? 'Approving...' : 'Approve'}
                                     </Button>
-                                    <Button variant="destructive" size="sm">
-                                      Reject
+                                    <Button 
+                                      variant="destructive" 
+                                      size="sm"
+                                      onClick={() => rejectMutation.mutate(app.id)}
+                                      disabled={rejectMutation.isPending}
+                                    >
+                                      {rejectMutation.isPending && rejectMutation.variables === app.id ? 'Rejecting...' : 'Reject'}
                                     </Button>
                                   </>
                                 )}
@@ -559,25 +615,25 @@ export default function FacultyDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-base font-medium">Boys Hostel</CardTitle>
+                      <CardTitle className="text-base font-medium">A Block</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">
                         <div className="flex justify-between">
                           <span className="text-sm text-gray-500 dark:text-gray-400">Total Rooms:</span>
-                          <span className="text-sm font-medium">120</span>
+                          <span className="text-sm font-medium">60</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm text-gray-500 dark:text-gray-400">Occupied:</span>
-                          <span className="text-sm font-medium">98</span>
+                          <span className="text-sm font-medium">48</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm text-gray-500 dark:text-gray-400">Available:</span>
-                          <span className="text-sm font-medium">22</span>
+                          <span className="text-sm font-medium">12</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm text-gray-500 dark:text-gray-400">Occupancy Rate:</span>
-                          <span className="text-sm font-medium">82%</span>
+                          <span className="text-sm font-medium">80%</span>
                         </div>
                       </div>
                     </CardContent>
@@ -590,25 +646,25 @@ export default function FacultyDashboard() {
 
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-base font-medium">Girls Hostel</CardTitle>
+                      <CardTitle className="text-base font-medium">B Block</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">
                         <div className="flex justify-between">
                           <span className="text-sm text-gray-500 dark:text-gray-400">Total Rooms:</span>
-                          <span className="text-sm font-medium">80</span>
+                          <span className="text-sm font-medium">60</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm text-gray-500 dark:text-gray-400">Occupied:</span>
-                          <span className="text-sm font-medium">65</span>
+                          <span className="text-sm font-medium">50</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm text-gray-500 dark:text-gray-400">Available:</span>
-                          <span className="text-sm font-medium">15</span>
+                          <span className="text-sm font-medium">10</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm text-gray-500 dark:text-gray-400">Occupancy Rate:</span>
-                          <span className="text-sm font-medium">81%</span>
+                          <span className="text-sm font-medium">83%</span>
                         </div>
                       </div>
                     </CardContent>
@@ -683,8 +739,8 @@ export default function FacultyDashboard() {
                         <tr className="border-b dark:border-gray-800">
                           <td className="py-3">Rahul Sharma</td>
                           <td className="py-3">CS2023056</td>
-                          <td className="py-3">Boys Hostel A</td>
-                          <td className="py-3">A-203</td>
+                          <td className="py-3">A Block</td>
+                          <td className="py-3">203</td>
                           <td className="py-3">2</td>
                           <td className="py-3">April 20, 2025</td>
                           <td className="py-3 text-right">
@@ -692,10 +748,10 @@ export default function FacultyDashboard() {
                           </td>
                         </tr>
                         <tr className="border-b dark:border-gray-800">
-                          <td className="py-3">Priya Patel</td>
+                          <td className="py-3">Suresh Patil</td>
                           <td className="py-3">EC2023011</td>
-                          <td className="py-3">Girls Hostel B</td>
-                          <td className="py-3">B-105</td>
+                          <td className="py-3">B Block</td>
+                          <td className="py-3">105</td>
                           <td className="py-3">1</td>
                           <td className="py-3">April 19, 2025</td>
                           <td className="py-3 text-right">
@@ -705,19 +761,19 @@ export default function FacultyDashboard() {
                         <tr className="border-b dark:border-gray-800">
                           <td className="py-3">Amit Kumar</td>
                           <td className="py-3">ME2023078</td>
-                          <td className="py-3">Boys Hostel A</td>
-                          <td className="py-3">A-110</td>
-                          <td className="py-3">3</td>
+                          <td className="py-3">A Block</td>
+                          <td className="py-3">110</td>
+                          <td className="py-3">1</td>
                           <td className="py-3">April 19, 2025</td>
                           <td className="py-3 text-right">
                             <Button variant="outline" size="sm">View</Button>
                           </td>
                         </tr>
                         <tr className="border-b dark:border-gray-800">
-                          <td className="py-3">Neha Singh</td>
+                          <td className="py-3">Rohit Singh</td>
                           <td className="py-3">EE2023045</td>
-                          <td className="py-3">Girls Hostel B</td>
-                          <td className="py-3">B-220</td>
+                          <td className="py-3">B Block</td>
+                          <td className="py-3">220</td>
                           <td className="py-3">2</td>
                           <td className="py-3">April 18, 2025</td>
                           <td className="py-3 text-right">
