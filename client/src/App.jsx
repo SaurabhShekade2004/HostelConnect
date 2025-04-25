@@ -13,6 +13,7 @@ import ApplicationForm from "@/pages/student/ApplicationForm";
 import ComplaintForm from "@/pages/student/ComplaintForm";
 import ContactRector from "@/pages/student/ContactRector";
 import FacultyDashboard from "@/pages/faculty/Dashboard";
+import ApplicationDetail from "@/pages/faculty/ApplicationDetail";
 import AllotRoom from "@/pages/faculty/AllotRoom";
 import ViewComplaints from "@/pages/faculty/ViewComplaints";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -72,6 +73,9 @@ function Router() {
       {/* Faculty routes */}
       <Route path="/faculty/dashboard">
         {() => <ProtectedRoute component={FacultyDashboard} roles={['faculty']} />}
+      </Route>
+      <Route path="/faculty/applications/:id">
+        {(params) => <ProtectedRoute component={ApplicationDetail} roles={['faculty']} params={params} />}
       </Route>
       <Route path="/faculty/allot-room">
         {() => <ProtectedRoute component={AllotRoom} roles={['faculty']} />}
