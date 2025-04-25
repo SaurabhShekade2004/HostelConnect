@@ -57,10 +57,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (token && token.startsWith('mock-jwt-token-')) {
       // Extract role from the mock token
       const role = token.split('-')[3];
+      console.log(`Authenticating with mock token for role: ${role}`);
       // Create a mock user object
       req.user = {
         id: role === 'student' ? 1 : 2,
         name: role === 'student' ? 'Student User' : 'Faculty Admin',
+        email: role === 'student' ? 'student@example.com' : 'faculty@example.com',
         role: role
       };
       return next();
@@ -76,6 +78,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       req.user = decoded;
       next();
     } catch (error) {
+      console.log('JWT verification failed:', error);
       // For development: If JWT verification fails, check if it's the dashboard route
       // This is for easier testing without proper JWT
       const path = req.path;
@@ -512,10 +515,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/faculty/applications/:id', authenticate, authorize(['faculty']), async (req, res) => {
     try {
       const applicationId = req.params.id;
+      console.log('Fetching application with ID:', applicationId);
       
       // Get application details
       const application = await storage.getApplicationById(applicationId);
       if (!application) {
+        // If not found by _id, try getting by custom applicationId
+        const applications = await storage.getApplicationsByStatus();
+        const matchedApp = applications.find(app => app._id === applicationId);
+        
+        if (matchedApp) {
+          return res.status(200).json(matchedApp);
+        }
+        
         return res.status(404).json({ message: 'Application not found' });
       }
       
