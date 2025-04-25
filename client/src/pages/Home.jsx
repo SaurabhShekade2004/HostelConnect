@@ -1,296 +1,441 @@
+import { useState } from 'react';
 import { Link } from 'wouter';
-import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { MapPinIcon, WifiIcon, ShieldIcon, UtensilsIcon, DumbbellIcon, BookIcon, SofaIcon, ShirtIcon, BikeIcon } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
+import { 
+  BookOpenIcon, 
+  BuildingIcon, 
+  CalendarIcon, 
+  CheckCircleIcon, 
+  GraduationCapIcon,
+  HomeIcon,
+  MapIcon,
+  MessageCircleIcon,
+  UserIcon
+} from 'lucide-react';
 
 export default function Home() {
-  const { setShowLoginModal } = useAuth();
-
-  const handleApplyNow = () => {
-    setShowLoginModal(true);
-  };
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState('about');
 
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-purple-900 via-blue-800 to-orange-600 text-white">
-        <div className="container mx-auto px-4 py-20 md:py-32">
-          <div className="max-w-2xl">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">Your Home Away From Home On Campus</h1>
+      <section className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-gray-900 to-gray-800/80 z-10" />
+        <div 
+          className="relative h-[600px] bg-cover bg-center" 
+          style={{ 
+            backgroundImage: "url('https://images.unsplash.com/photo-1485628390555-1a7bd503f9fe?auto=format&fit=crop&q=80&w=2000')" 
+          }} 
+        />
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-20 text-white p-4">
+          <div className="text-center max-w-4xl">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+              शासकीय अभियांत्रिकी महाविद्यालय छत्रपती संभाजीनगर वस्तीगृह
+            </h1>
             <p className="text-lg md:text-xl mb-8">
-              Experience comfort, convenience, and community in our modern university residence halls. 
-              Perfect for students looking for quality accommodation close to campus.
+              A premier residential facility for engineering students in Chhatrapati Sambhajinagar
             </p>
-            <div className="flex flex-wrap gap-4">
-              <Button 
-                onClick={handleApplyNow}
-                className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 text-lg"
-              >
-                Apply Now
+            {user ? (
+              <Button size="lg" asChild className="bg-orange-500 hover:bg-orange-600">
+                <Link href={user.role === 'student' ? '/student/dashboard' : '/faculty/dashboard'}>
+                  Go to Dashboard
+                </Link>
               </Button>
-              <Button 
-                variant="outline" 
-                className="border-white text-white hover:bg-white hover:text-blue-900"
-                asChild
-              >
-                <Link href="/gallery">Schedule a Tour</Link>
-              </Button>
-            </div>
+            ) : (
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Button 
+                  size="lg" 
+                  onClick={() => window.dispatchEvent(new CustomEvent('open-login-modal'))}
+                  className="bg-orange-500 hover:bg-orange-600 w-full sm:w-auto"
+                >
+                  Login
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="border-white text-white hover:bg-white/10 w-full sm:w-auto"
+                  onClick={() => window.dispatchEvent(new CustomEvent('open-register-modal'))}
+                >
+                  Register
+                </Button>
+              </div>
+            )}
           </div>
         </div>
-        <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-b from-transparent to-blue-950"></div>
       </section>
 
-      {/* Features Section */}
-      <section className="bg-gray-900 text-white py-16">
+      {/* Features */}
+      <section className="py-16 bg-white dark:bg-gray-950">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="flex flex-col items-center text-center p-6 rounded-lg">
-              <div className="bg-orange-500/20 p-4 rounded-full mb-4">
-                <MapPinIcon className="h-8 w-8 text-orange-500" />
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold mb-4">Hostel Features</h2>
+            <p className="text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+              Our hostel provides comfortable accommodation with modern amenities to ensure an optimal living and learning environment for students.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg text-center">
+              <div className="bg-orange-100 dark:bg-orange-900/30 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4">
+                <BuildingIcon className="h-8 w-8 text-orange-500" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Prime Location</h3>
-              <p className="text-gray-300">
-                Located just 5 minutes walk from the main campus buildings and libraries.
+              <h3 className="text-xl font-semibold mb-2">Modern Facilities</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Well-furnished rooms with study spaces, high-speed Wi-Fi, and regular maintenance.
               </p>
             </div>
-            
-            <div className="flex flex-col items-center text-center p-6 rounded-lg">
-              <div className="bg-orange-500/20 p-4 rounded-full mb-4">
-                <WifiIcon className="h-8 w-8 text-orange-500" />
+
+            <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg text-center">
+              <div className="bg-orange-100 dark:bg-orange-900/30 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4">
+                <BookOpenIcon className="h-8 w-8 text-orange-500" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Full Connectivity</h3>
-              <p className="text-gray-300">
-                High-speed WiFi throughout all buildings and common areas.
+              <h3 className="text-xl font-semibold mb-2">Study Environment</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Dedicated study halls, reading rooms, and a well-stocked library for academic excellence.
               </p>
             </div>
-            
-            <div className="flex flex-col items-center text-center p-6 rounded-lg">
-              <div className="bg-orange-500/20 p-4 rounded-full mb-4">
-                <ShieldIcon className="h-8 w-8 text-orange-500" />
+
+            <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg text-center">
+              <div className="bg-orange-100 dark:bg-orange-900/30 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4">
+                <UserIcon className="h-8 w-8 text-orange-500" />
               </div>
               <h3 className="text-xl font-semibold mb-2">24/7 Security</h3>
-              <p className="text-gray-300">
-                Round-the-clock security with card access to all residence halls.
+              <p className="text-gray-600 dark:text-gray-400">
+                Round-the-clock security, CCTV surveillance, and controlled access for student safety.
+              </p>
+            </div>
+
+            <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg text-center">
+              <div className="bg-orange-100 dark:bg-orange-900/30 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4">
+                <MessageCircleIcon className="h-8 w-8 text-orange-500" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Support Services</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Dedicated staff, complaint resolution system, and mentorship for student welfare.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* About Section */}
-      <section className="bg-gray-900 text-white py-16">
+      {/* About & Information Tabs */}
+      <section className="py-16 bg-gray-50 dark:bg-gray-900">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center gap-8">
-            <div className="md:w-1/2">
-              <img 
-                src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80"
-                alt="Students studying together" 
-                className="rounded-lg shadow-lg"
-                width="600"
-                height="400"
-              />
-            </div>
-            <div className="md:w-1/2">
-              <h2 className="text-3xl font-bold text-orange-500 mb-4">About Our Residence Halls</h2>
-              <p className="text-lg mb-4">
-                Home to over 2,000 students from across the globe, our residence halls provide the perfect environment for academic success and personal growth.
+          <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="max-w-4xl mx-auto">
+            <TabsList className="grid w-full grid-cols-3 mb-8">
+              <TabsTrigger value="about">About</TabsTrigger>
+              <TabsTrigger value="eligibility">Eligibility</TabsTrigger>
+              <TabsTrigger value="application">Application Process</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="about" className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+              <h3 className="text-2xl font-bold mb-4">About Our Hostel</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
+                The Chhatrapati Sambhajinagar Government Engineering College Hostel provides comfortable and secure accommodation for students pursuing their education at our prestigious institution. Our mission is to create a conducive living environment that supports academic excellence and personal growth.
               </p>
-              <h3 className="text-xl font-semibold text-orange-500 mb-2">A Community That Supports You</h3>
-              <p className="mb-4">
-                Our residence halls are more than just a place to sleep. They're vibrant communities designed to enhance your university experience through peer connections, academic support, and dedicated staff.
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                <div>
+                  <h4 className="text-lg font-semibold mb-3 flex items-center">
+                    <MapIcon className="h-5 w-5 mr-2 text-orange-500" />
+                    Location & Accessibility
+                  </h4>
+                  <p className="text-gray-600 dark:text-gray-300 mb-2">
+                    Our hostel is conveniently located within the campus, ensuring easy access to academic buildings, library, and other facilities. The location provides a peaceful atmosphere for studying while being close to necessary amenities.
+                  </p>
+                  <ul className="list-disc list-inside text-gray-600 dark:text-gray-300 ml-6 space-y-1">
+                    <li>Walking distance to academic buildings</li>
+                    <li>Close proximity to college library</li>
+                    <li>Well-connected to local transportation</li>
+                    <li>Nearby shopping facilities for essentials</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="text-lg font-semibold mb-3 flex items-center">
+                    <HomeIcon className="h-5 w-5 mr-2 text-orange-500" />
+                    Accommodation Details
+                  </h4>
+                  <p className="text-gray-600 dark:text-gray-300 mb-2">
+                    Our hostel provides various types of accommodation options to meet different student needs and preferences. All rooms are designed to provide a comfortable study and living environment.
+                  </p>
+                  <ul className="list-disc list-inside text-gray-600 dark:text-gray-300 ml-6 space-y-1">
+                    <li>Triple-sharing rooms (standard option)</li>
+                    <li>Separate wings for male and female students</li>
+                    <li>Furnished with beds, desks, and storage</li>
+                    <li>Common rooms on each floor</li>
+                    <li>Clean washrooms and shower facilities</li>
+                  </ul>
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="eligibility" className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+              <h3 className="text-2xl font-bold mb-4">Eligibility Criteria</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                The following students are eligible to apply for hostel accommodation at our institution:
               </p>
-              <ul className="space-y-2">
-                <li className="flex items-center gap-2">
-                  <div className="text-orange-500">✓</div>
-                  <span>Resident advisors on each floor to provide guidance and support</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="text-orange-500">✓</div>
-                  <span>Regular social events and academic workshops</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="text-orange-500">✓</div>
-                  <span>Dedicated quiet study spaces in each building</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="text-orange-500">✓</div>
-                  <span>Inclusive environment celebrating diversity</span>
-                </li>
-              </ul>
-              <Link href="/amenities" className="inline-flex items-center gap-2 text-orange-500 hover:underline mt-4">
-                Hear from our residents →
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Amenities Section */}
-      <section className="bg-gray-900 text-white py-16">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Amenities & Services</h2>
-          <p className="text-center text-lg mb-12 max-w-3xl mx-auto">
-            Enjoy a wide range of facilities designed to make your stay comfortable and convenient.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-gray-800 p-6 rounded-lg">
-              <UtensilsIcon className="h-10 w-10 text-orange-500 mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Dining Facilities</h3>
-              <p>Modern dining hall with diverse meal plans including vegetarian and special dietary options. Coffee shop on premises.</p>
-            </div>
-            
-            <div className="bg-gray-800 p-6 rounded-lg">
-              <DumbbellIcon className="h-10 w-10 text-orange-500 mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Fitness Center</h3>
-              <p>Fully equipped gym with cardio and strength training equipment. Free fitness classes for residents.</p>
-            </div>
-            
-            <div className="bg-gray-800 p-6 rounded-lg">
-              <BookIcon className="h-10 w-10 text-orange-500 mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Study Spaces</h3>
-              <p>Dedicated quiet study rooms, group project spaces, and 24-hour computer labs with printing.</p>
-            </div>
-            
-            <div className="bg-gray-800 p-6 rounded-lg">
-              <SofaIcon className="h-10 w-10 text-orange-500 mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Common Areas</h3>
-              <p>Comfortable lounges with TV, games, and kitchen facilities for socializing and relaxation.</p>
-            </div>
-            
-            <div className="bg-gray-800 p-6 rounded-lg">
-              <ShirtIcon className="h-10 w-10 text-orange-500 mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Laundry Facilities</h3>
-              <p>Self-service laundry rooms in each building with app-based monitoring system.</p>
-            </div>
-            
-            <div className="bg-gray-800 p-6 rounded-lg">
-              <BikeIcon className="h-10 w-10 text-orange-500 mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Bike Storage</h3>
-              <p>Secure bicycle storage and repair stations. Campus bike sharing program available.</p>
-            </div>
-          </div>
-          <div className="text-center mt-10">
-            <Button asChild className="bg-orange-500 hover:bg-orange-600">
-              <Link href="/amenities">View All Amenities</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="bg-orange-500 text-white py-16">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to Secure Your Place?</h2>
-          <p className="text-lg mb-8 max-w-2xl mx-auto">
-            Applications for the next academic year open on November 1st. Current students can apply for renewal starting October 15th.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Button 
-              onClick={handleApplyNow}
-              className="bg-gray-900 hover:bg-gray-800 text-white"
-            >
-              Apply Now
-            </Button>
-            <Button 
-              variant="outline" 
-              className="border-white text-white hover:bg-white hover:text-orange-500"
-              asChild
-            >
-              <Link href="/gallery">Schedule a Tour</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      <section className="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white py-16">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-8">Contact Us</h2>
-          <p className="text-center mb-12 max-w-2xl mx-auto">
-            Have questions or need assistance? Reach out to our housing team.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
-              <h3 className="text-xl font-semibold text-orange-500 mb-4">Housing Office</h3>
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <MapPinIcon className="h-5 w-5 text-orange-500 mt-1" />
+              
+              <div className="space-y-6">
+                <div className="flex">
+                  <div className="mr-3 mt-1">
+                    <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                  </div>
                   <div>
-                    <p>123 University Way, Building C</p>
-                    <p>Campus Quarter, State 12345</p>
+                    <h4 className="text-lg font-semibold">Enrolled Students</h4>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      Students must be currently enrolled in a full-time undergraduate or postgraduate program at Government Engineering College, Chhatrapati Sambhajinagar.
+                    </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-orange-500">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
-                  </svg>
-                  <p>(555) 123-4567</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-orange-500">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
-                  </svg>
-                  <p>housing@university.edu</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-orange-500">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                  </svg>
+                
+                <div className="flex">
+                  <div className="mr-3 mt-1">
+                    <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                  </div>
                   <div>
-                    <p>Monday - Friday: 8:00 AM - 6:00 PM</p>
-                    <p>Saturday: 10:00 AM - 2:00 PM</p>
-                    <p>Sunday: Closed</p>
+                    <h4 className="text-lg font-semibold">Academic Standing</h4>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      For continuing students, maintaining a minimum CGPA is required. Preference is given to students with higher academic performance.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex">
+                  <div className="mr-3 mt-1">
+                    <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold">Distance from Hometown</h4>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      Priority is given to students whose permanent residence is located more than 50 kilometers from the college campus.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex">
+                  <div className="mr-3 mt-1">
+                    <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold">Financial Need</h4>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      Students from economically disadvantaged backgrounds may receive special consideration during the allocation process.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex">
+                  <div className="mr-3 mt-1">
+                    <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold">Conduct Record</h4>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      Students must not have any serious disciplinary actions or violations in their previous academic records.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="application" className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+              <h3 className="text-2xl font-bold mb-4">Application Process</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                Follow these steps to apply for hostel accommodation:
+              </p>
+              
+              <div className="space-y-6">
+                <div className="flex">
+                  <div className="min-w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                    <span className="text-orange-600 font-semibold">1</span>
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold">Registration</h4>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      Create an account on our online portal using your college email address and registration number. Verify your email to activate your account.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex">
+                  <div className="min-w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                    <span className="text-orange-600 font-semibold">2</span>
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold">Complete Application Form</h4>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      Fill out the online application form with your personal details, academic information, and preferences. Make sure all information is accurate and complete.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex">
+                  <div className="min-w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                    <span className="text-orange-600 font-semibold">3</span>
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold">Document Upload</h4>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      Upload required documents including your latest marksheet, residential proof, and a recent passport-sized photograph. All documents should be in PDF or JPEG format.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex">
+                  <div className="min-w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                    <span className="text-orange-600 font-semibold">4</span>
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold">Application Review</h4>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      Your application will be reviewed by the hostel administration based on eligibility criteria and availability. This process typically takes 1-2 weeks.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex">
+                  <div className="min-w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                    <span className="text-orange-600 font-semibold">5</span>
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold">Allocation and Payment</h4>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      If approved, you will receive an allotment letter with room details and payment instructions. Complete the payment within the specified timeline to confirm your accommodation.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <Separator className="my-6" />
+              
+              <div className="flex flex-col sm:flex-row items-center gap-4 justify-center mt-4">
+                <p className="text-gray-600 dark:text-gray-300 font-medium">Ready to apply?</p>
+                {user ? (
+                  <Button asChild className="bg-orange-500 hover:bg-orange-600">
+                    <Link href="/student/application">Apply for Hostel</Link>
+                  </Button>
+                ) : (
+                  <Button onClick={() => window.dispatchEvent(new CustomEvent('open-register-modal'))} className="bg-orange-500 hover:bg-orange-600">
+                    Register Now
+                  </Button>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </section>
+
+      {/* Important Dates */}
+      <section className="py-16 bg-white dark:bg-gray-950">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Important Dates</h2>
+            <p className="text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+              Keep track of these key dates related to hostel applications and allocations for the current academic year.
+            </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg border border-gray-100 dark:border-gray-800">
+                <div className="flex items-start">
+                  <div className="bg-orange-100 dark:bg-orange-900/30 p-3 rounded-full mr-4">
+                    <CalendarIcon className="h-6 w-6 text-orange-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold mb-2">Application Period</h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-2">May 1 - June 30, 2025</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Complete your online application during this period for consideration in the first allocation round.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg border border-gray-100 dark:border-gray-800">
+                <div className="flex items-start">
+                  <div className="bg-orange-100 dark:bg-orange-900/30 p-3 rounded-full mr-4">
+                    <CalendarIcon className="h-6 w-6 text-orange-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold mb-2">Document Verification</h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-2">July 1 - July 15, 2025</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Physical verification of documents for shortlisted candidates at the hostel office.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg border border-gray-100 dark:border-gray-800">
+                <div className="flex items-start">
+                  <div className="bg-orange-100 dark:bg-orange-900/30 p-3 rounded-full mr-4">
+                    <CalendarIcon className="h-6 w-6 text-orange-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold mb-2">Allotment Announcement</h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-2">July 20, 2025</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      First round of room allotments will be announced on the portal and via email.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg border border-gray-100 dark:border-gray-800">
+                <div className="flex items-start">
+                  <div className="bg-orange-100 dark:bg-orange-900/30 p-3 rounded-full mr-4">
+                    <CalendarIcon className="h-6 w-6 text-orange-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold mb-2">Fee Payment Deadline</h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-2">July 21 - August 5, 2025</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Complete your hostel fee payment to confirm your allotment.
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
-            <div>
-              <form className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="name" className="block text-sm font-medium mb-2">Name</label>
-                    <input 
-                      type="text" 
-                      id="name" 
-                      className="w-full px-4 py-3 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                      placeholder="Your Name" 
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium mb-2">Email</label>
-                    <input 
-                      type="email" 
-                      id="email" 
-                      className="w-full px-4 py-3 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                      placeholder="your.email@example.com" 
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label htmlFor="subject" className="block text-sm font-medium mb-2">Subject</label>
-                  <input 
-                    type="text" 
-                    id="subject" 
-                    className="w-full px-4 py-3 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    placeholder="How can we help you?" 
-                  />
-                </div>
-                <div>
-                  <label htmlFor="message" className="block text-sm font-medium mb-2">Message</label>
-                  <textarea 
-                    id="message" 
-                    rows="4" 
-                    className="w-full px-4 py-3 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    placeholder="Please provide details about your inquiry..."
-                  ></textarea>
-                </div>
-                <Button className="w-full bg-orange-500 hover:bg-orange-600">
-                  Send Message
-                </Button>
-              </form>
-            </div>
           </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-16 bg-gray-900 text-white">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold mb-6">Ready to Join Our Hostel Community?</h2>
+          <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
+            Apply now to secure your place in our comfortable and supportive hostel environment.
+          </p>
+          
+          {user ? (
+            <Button size="lg" asChild className="bg-orange-500 hover:bg-orange-600">
+              <Link href="/student/application">Apply for Accommodation</Link>
+            </Button>
+          ) : (
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button 
+                size="lg" 
+                onClick={() => window.dispatchEvent(new CustomEvent('open-login-modal'))}
+                className="bg-orange-500 hover:bg-orange-600 w-full sm:w-auto"
+              >
+                Login to Apply
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-white text-white hover:bg-white/10 w-full sm:w-auto"
+                onClick={() => window.dispatchEvent(new CustomEvent('open-register-modal'))}
+              >
+                Create an Account
+              </Button>
+            </div>
+          )}
         </div>
       </section>
     </div>
