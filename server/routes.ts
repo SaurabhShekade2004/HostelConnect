@@ -600,6 +600,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Room occupancy check endpoint
+  app.get('/api/faculty/rooms/:building/:roomNumber/occupancy', authenticate, authorize(['faculty']), async (req, res) => {
+    try {
+      const { building, roomNumber } = req.params;
+      
+      // Get all allotments for this room
+      const allotments = await storage.getAllotmentsForRoom(building, roomNumber);
+      
+      // Count active allotments
+      const occupancy = allotments.length;
+      
+      // Get bed numbers that are already taken
+      const occupiedBeds = allotments.map(allotment => allotment.bedNumber);
+      
+      return res.status(200).json({
+        occupancy,
+        occupiedBeds,
+        isFull: occupancy >= 2, // Room is full if 2 or more students are already allotted
+        availableBeds: 2 - occupancy
+      });
+    } catch (error) {
+      console.error('Error checking room occupancy:', error);
+      return res.status(500).json({ message: 'Server error' });
+    }
+  });
+  
   app.patch('/api/faculty/complaints/:complaintId', authenticate, authorize(['faculty']), async (req, res) => {
     try {
       const { complaintId } = req.params;

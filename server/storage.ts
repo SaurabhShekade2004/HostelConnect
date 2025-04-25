@@ -78,6 +78,10 @@ class Storage {
   async checkRoomAvailability(hostelBuilding: string, roomNumber: string, bedNumber: string) {
     return await localStorage.checkRoomAvailability(hostelBuilding, roomNumber, bedNumber);
   }
+  
+  async getAllotmentsForRoom(hostelBuilding: string, roomNumber: string) {
+    return await localStorage.getAllotmentsForRoom(hostelBuilding, roomNumber);
+  }
 
   async countAllottedStudents() {
     return await localStorage.countAllottedStudents();

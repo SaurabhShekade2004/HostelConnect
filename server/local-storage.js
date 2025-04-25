@@ -378,6 +378,15 @@ class LocalStorage {
     return allotments.length === 0;
   }
 
+  async getAllotmentsForRoom(hostelBuilding, roomNumber) {
+    // Get all active allotments for this room
+    return await this.db.collection('allotments').find({
+      hostelBuilding,
+      roomNumber,
+      status: 'active'
+    });
+  }
+
   async countAllottedStudents() {
     return await this.db.collection('allotments').countDocuments({ status: 'active' });
   }
