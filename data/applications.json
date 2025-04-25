@@ -1,1 +1,19 @@
-[]
+[
+  {
+    "studentId": 2,
+    "applicationId": "HOSTEL-2025-2889",
+    "name": "Student User",
+    "class": "a",
+    "rollNo": "a",
+    "cgpa": 1,
+    "address": "a",
+    "mobileNumber": "0000000000",
+    "parentMobile": "0000000000",
+    "email": "anaspirants01@gmail.com",
+    "category": "obc",
+    "marksheetUrl": "/uploads/1745567242190-ans week3.pdf",
+    "status": "pending",
+    "createdAt": "2025-04-25T07:47:25.199Z",
+    "_id": "m9who2hb6xaxf4d"
+  }
+]

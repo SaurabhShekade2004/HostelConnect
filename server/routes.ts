@@ -419,8 +419,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         unresolvedComplaints: await storage.countUnresolvedComplaints()
       };
       
-      // Get recent applications
-      const recentApplications = await storage.getRecentApplications();
+      // Get applications sorted by CGPA in descending order
+      const allApplications = await storage.getApplicationsByStatus();
+      
+      // Sort applications by CGPA in descending order
+      const sortedApplications = allApplications.sort((a, b) => b.cgpa - a.cgpa);
       
       // Get room statistics
       const roomStats = {
@@ -436,12 +439,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ]
       };
       
+      // Get complaints
+      const pendingComplaints = await storage.getComplaintsByStatus('pending');
+      
       // Get notifications
       const notifications = await storage.getNotifications();
       
       return res.status(200).json({
         stats,
-        recentApplications,
+        applications: sortedApplications,
+        pendingComplaints,
         roomStats,
         notifications
       });

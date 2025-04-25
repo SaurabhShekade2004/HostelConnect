@@ -21,7 +21,10 @@ export default function FacultyDashboard() {
   // Fetch dashboard data
   const { data, isLoading, error } = useQuery({
     queryKey: ['/api/faculty/dashboard'],
-    queryFn: () => apiRequest({ url: '/api/faculty/dashboard', method: 'GET' })
+    queryFn: async () => {
+      const response = await apiRequest('GET', '/api/faculty/dashboard');
+      return response.json();
+    }
   });
 
   // Format date
@@ -495,7 +498,7 @@ export default function FacultyDashboard() {
                           <tr key={app.id} className="border-b dark:border-gray-800">
                             <td className="py-3">{app.name}</td>
                             <td className="py-3">{app.rollNo}</td>
-                            <td className="py-3 font-medium">{app.cgpa}</td>
+                            <td className="py-3 font-medium text-orange-600">{app.cgpa}</td>
                             <td className="py-3">{app.class}</td>
                             <td className="py-3">{formatDate(app.createdAt)}</td>
                             <td className="py-3">{getStatusBadge(app.status)}</td>
