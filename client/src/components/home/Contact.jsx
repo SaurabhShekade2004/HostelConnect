@@ -152,7 +152,7 @@ export default function Contact() {
                   </div>
                   <div className="ml-4">
                     <p className="font-medium">Address</p>
-                    <p className="text-gray-600 dark:text-gray-400">College Hostel Building, University Campus, City - 123456</p>
+                    <p className="text-gray-600 dark:text-gray-400">College Hostel Building, GECCS, Chhatrapati Sambhajinagar City - 431005</p>
                   </div>
                 </div>
                 
@@ -172,7 +172,7 @@ export default function Contact() {
                   </div>
                   <div className="ml-4">
                     <p className="font-medium">Email</p>
-                    <p className="text-gray-600 dark:text-gray-400">hostel@college.edu</p>
+                    <p className="text-gray-600 dark:text-gray-400">geccshostel@college.edu</p>
                   </div>
                 </div>
                 

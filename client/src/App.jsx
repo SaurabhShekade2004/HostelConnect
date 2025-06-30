@@ -37,7 +37,12 @@ function ProtectedRoute({ component: Component, roles, ...rest }) {
     return <div className="flex h-screen items-center justify-center">
       <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
         <p>You do not have permission to access this page.</p>
-        <p>Please <a href="/" className="font-bold underline">login</a> with appropriate credentials.</p>
+        <Button 
+                onClick={handleLoginClick}
+                className="bg-orange-500 hover:bg-orange-600 text-white"
+              >
+                login Now
+              </Button>
       </div>
     </div>;
   }
@@ -102,7 +107,7 @@ function App() {
             </main>
             <Footer />
           </div>
-          <LoginModal />
+          <LoginModal/>
           <RegisterModal />
           <Toaster />
         </AuthProvider>

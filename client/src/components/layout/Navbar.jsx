@@ -43,7 +43,7 @@ export default function Navbar() {
             />
             <div>
               <h1 className="text-sm md:text-base font-bold font-devanagari">
-                शासकीय अभियांत्रिकी महाविद्यालय छत्रपती संभाजीनगर वस्तीगृह
+                शासकीय अभियांत्रिकी महाविद्यालय ,छत्रपती संभाजीनगर वस्तीगृह
               </h1>
             </div>
           </Link>
@@ -179,7 +179,7 @@ export default function Navbar() {
                 }}
                 className="w-full bg-orange-500 hover:bg-orange-600 text-white mt-2"
               >
-                Book Now
+                Login Here
               </Button>
             )}
           </div>

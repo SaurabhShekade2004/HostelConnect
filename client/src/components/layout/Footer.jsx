@@ -15,7 +15,7 @@ export default function Footer() {
           <div>
             <h3 className="text-white text-lg font-bold mb-4">University Hostels</h3>
             <p className="mb-4">
-              Providing comfortable, safe and convenient housing for university students since 1985.
+              Providing comfortable, safe and convenient housing for university students since 1960.
             </p>
             <div className="flex space-x-3">
               <a href="#" aria-label="Facebook" className="hover:text-orange-500 transition-colors">
